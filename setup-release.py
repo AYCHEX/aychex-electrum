@@ -56,7 +56,7 @@ if sys.platform == 'darwin':
 
     # Try to locate qt_menu
     # Let's try the port version first!
-    if os.path.isfile("/opt/local/lib/Resources/qt_menu.nib"):
+    if os.path.isdir("/opt/local/lib/Resources/qt_menu.nib"):
       qt_menu_location = "/opt/local/lib/Resources/qt_menu.nib"
     else:
       # No dice? Then let's try the brew version

@@ -17,8 +17,8 @@ data_files = []
 
 if platform.system() != 'Windows' and platform.system() != 'Darwin':
     data_files += [
-        ('/usr/share/applications/',['electrum.desktop']),
-        ('/usr/share/app-install/icons/',['electrum.png'])
+        ('/usr/share/applications/',['electrum-bitcoin.desktop', 'electrum-litecoin.desktop']),
+        ('/usr/share/app-install/icons/',['electrum-bitcoin.png', 'electrum-litecoin.png'])
     ]
     if not os.path.exists('locale'):
         os.mkdir('locale')
@@ -29,10 +29,10 @@ if platform.system() != 'Windows' and platform.system() != 'Darwin':
 data_files += [
     (util.appdata_dir(), ["data/background.png", "data/style.css"]),
     (os.path.join(util.appdata_dir(), "icons"), [
-        "data/icons/accounts.png",
+#        "data/icons/accounts.png",
         "data/icons/confirmed.png",
-        "data/icons/expand.png",
-        "data/icons/interact.png",
+#        "data/icons/expand.png",
+#        "data/icons/interact.png",
         "data/icons/unconfirmed.png"
     ])
 ]
@@ -43,7 +43,8 @@ setup(name = "Electrum",
     package_dir = {'electrum': 'lib'},
     scripts= ['electrum'],
     data_files = data_files,
-    py_modules = ['electrum.version',
+    py_modules = ['electrum.config',
+                  'electrum.version',
                   'electrum.wallet',
                   'electrum.interface',
                   'electrum.gui',
@@ -56,7 +57,8 @@ setup(name = "Electrum",
                   'electrum.bmp',
                   'electrum.msqr',
                   'electrum.util',
-                  'electrum.i18n'],
+                  'electrum.i18n',
+                  'electrum.qrscanner'],
     description = "Lightweight Bitcoin Wallet",
     author = "thomasv",
     author_email = "thomasv@gitorious",

@@ -31,7 +31,6 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import PyQt4.QtCore as QtCore
 import PyQt4.QtGui as QtGui
-from interface import DEFAULT_SERVERS
 
 try:
     import icons_rc
@@ -46,6 +45,7 @@ import bmp, mnemonic, pyqrnative, qrscanner
 from decimal import Decimal
 
 import platform
+import config
 
 if platform.system() == 'Windows':
     MONOSPACE_FONT = 'Lucida Console'
@@ -205,7 +205,7 @@ class ElectrumWindow(QMainWindow):
         self.setCentralWidget(tabs)
         self.create_status_bar()
         self.setGeometry(100,100,840,400)
-        title = 'Electrum ' + self.wallet.electrum_version + '  -  ' + self.wallet.path
+        title = config.title + ' ' + self.wallet.electrum_version + '  -  ' + self.wallet.path
         if not self.wallet.seed: title += ' [seedless]'
         self.setWindowTitle( title )
 
@@ -461,7 +461,7 @@ class ElectrumWindow(QMainWindow):
             b.clicked.connect(fill_from_qr)
             grid.addWidget(b, 1, 5)
     
-        grid.addWidget(HelpButton(_('Recipient of the funds.') + '\n\n' + _('You may enter a Bitcoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)')), 1, 4)
+        grid.addWidget(HelpButton(_('Recipient of the funds.') + '\n\n' + _('You may enter a Bitcoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)').replace("Bitcoin", config.coin)), 1, 4)
 
         completer = QCompleter()
         completer.setCaseSensitivity(False)
@@ -484,7 +484,7 @@ class ElectrumWindow(QMainWindow):
         grid.addWidget(QLabel(_('Fee')), 4, 0)
         grid.addWidget(self.fee_e, 4, 1, 1, 2) 
         grid.addWidget(HelpButton(
-                _('Bitcoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+                _('Bitcoin transactions are in general not free. A transaction fee is paid by the sender of the funds.').replace("Bitcoin", config.coin) + '\n\n'\
                     + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
                     + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')), 4, 3)
         
@@ -565,7 +565,7 @@ class ElectrumWindow(QMainWindow):
             to_address = r
 
         if not self.wallet.is_valid(to_address):
-            QMessageBox.warning(self, _('Error'), _('Invalid Bitcoin Address') + ':\n' + to_address, _('OK'))
+            QMessageBox.warning(self, _('Error'), _('Invalid Bitcoin Address').replace("Bitcoin", config.coin) + ':\n' + to_address, _('OK'))
             return
 
         try:
@@ -614,7 +614,7 @@ class ElectrumWindow(QMainWindow):
             self.set_frozen(self.payto_e,True)
             self.set_frozen(self.amount_e,True)
             self.set_frozen(self.message_e,True)
-            self.payto_sig.setText( '      The bitcoin URI was signed by ' + identity )
+            self.payto_sig.setText( '      The %s URI was signed by %s' % (config.coin_lower, identity) )
         else:
             self.payto_sig.setVisible(False)
 
@@ -1006,7 +1006,7 @@ class ElectrumWindow(QMainWindow):
             amount = numbify(amount_e)
             #label = str( label_e.getText() )
             if amount is not None:
-                qrw.set_addr('bitcoin:%s?amount=%s'%(address,str( Decimal(amount) /100000000)))
+                qrw.set_addr('%s:%s?amount=%s'%(config.coin_lower, address, str( Decimal(amount) /100000000)))
             else:
                 qrw.set_addr( address )
             qrw.repaint()
@@ -1307,11 +1307,11 @@ class ElectrumWindow(QMainWindow):
         else:
             import random
             status = _("Please choose a server.")
-            server = random.choice( DEFAULT_SERVERS )
+            server = random.choice( config.servers )
 
         if not wallet.interface.servers:
             servers_list = []
-            for x in DEFAULT_SERVERS:
+            for x in config.servers:
                 h,port,protocol = x.split(':')
                 servers_list.append( (h,[(protocol,port)] ) )
         else:
@@ -1441,7 +1441,7 @@ class ElectrumGui:
         s.start()
         w = QDialog()
         w.resize(200, 70)
-        w.setWindowTitle('Electrum')
+        w.setWindowTitle(config.title)
         l = QLabel('')
         vbox = QVBoxLayout()
         vbox.addWidget(l)

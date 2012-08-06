@@ -1,0 +1,16 @@
+# If you want electrum to appear in a linux app launcher ("start menu"), install this by doing:
+# sudo desktop-file-install electrum-litecoin.desktop
+
+[Desktop Entry]
+Comment=Lightweight Litecoin Client
+Exec=electrum --litecoin
+GenericName[en_US]=Electrum Litecoin
+GenericName=Electrum Litecoin
+Icon=/usr/share/app-install/icons/electrum-litecoin.png
+Name[en_US]=Electrum Litecoin Wallet
+Name=Electrum Litecoin Wallet
+Categories=Network;
+StartupNotify=false
+Terminal=false
+Type=Application
+

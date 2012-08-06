@@ -24,6 +24,7 @@ pygtk.require('2.0')
 import gtk, gobject
 from decimal import Decimal
 from util import print_error
+import config
 
 import pyqrnative, mnemonic
 
@@ -33,7 +34,6 @@ import platform
 MONOSPACE_FONT = 'Lucida Console' if platform.system() == 'Windows' else 'monospace'
 
 from wallet import format_satoshis
-from interface import DEFAULT_SERVERS
 
 def numbify(entry, is_int = False):
     text = entry.get_text().strip()
@@ -310,11 +310,11 @@ def run_network_dialog( wallet, parent ):
     else:
         import random
         status = "Please choose a server."
-        server = random.choice( DEFAULT_SERVERS )
+        server = random.choice( config.servers )
 
     if not wallet.interface.servers:
         servers_list = []
-        for x in DEFAULT_SERVERS:
+        for x in config.servers:
             h,port,protocol = x.split(':')
             servers_list.append( (h,[(protocol,port)] ) )
     else:
@@ -563,7 +563,7 @@ class ElectrumWindow:
         self.funds_error = False # True if not enough funds
 
         self.window = MyWindow(gtk.WINDOW_TOPLEVEL)
-        title = 'Electrum ' + self.wallet.electrum_version + '  -  ' + self.wallet.path
+        title = config.title + ' ' + self.wallet.electrum_version + '  -  ' + self.wallet.path
         if not self.wallet.seed: title += ' [seedless]'
         self.window.set_title(title)
         self.window.connect("destroy", gtk.main_quit)
@@ -801,7 +801,7 @@ class ElectrumWindow:
             self.set_frozen(self.payto_entry,True)
             self.set_frozen(self.amount_entry,True)
             self.set_frozen(self.message_entry,True)
-            self.payto_sig_id.set_text( '      The bitcoin URI was signed by ' + identity )
+            self.payto_sig_id.set_text( '      The %s URI was signed by %s' (config.coin_lower, identity) )
         else:
             self.payto_sig.set_visible(False)
 
@@ -853,7 +853,7 @@ class ElectrumWindow:
             to_address = r
 
         if not self.wallet.is_valid(to_address):
-            self.show_message( "invalid bitcoin address:\n"+to_address)
+            self.show_message( "invalid %s address:\n%s" % (config.coin_lower, to_address))
             return
 
         try:

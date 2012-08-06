@@ -1,20 +1,23 @@
 """
-py2app/py2exe build script for Electrum Litecoin
+py2app/py2exe build script for Electrum
 
 Usage (Mac OS X):
-     python setup.py py2app
+     sudo python setup.py py2app
+     sudo LITECOIN=true python setup.py py2app
 
-Usage (Windows):
-     python setup.py py2exe
 """
 
 import sys, os, shutil, re
 from setuptools import setup
 from lib.version import ELECTRUM_VERSION as version
 from lib.util import print_error
+from lib import config
 
+# Build Litecoin app if pass in LITECOIN=true
+if os.environ.has_key('LITECOIN'):
+    config.setup_litecoin()
 
-name = "Electrum"
+name = config.title.replace(" ", "")
 mainscript = 'electrum'
 
 if sys.version_info[:3] < (2,6,0):
@@ -28,7 +31,8 @@ if sys.platform == 'darwin':
         setup_requires=['py2app'],
         app=[mainscript],
         options=dict(py2app=dict(argv_emulation=True,
-                                 iconfile='electrum.icns',
+                                 argv_inject=config.argument,
+                                 iconfile='electrum-%s.icns' % config.coin_lower,
                                  resources=["data/background.png", "data/style.css", "data/icons"])),
     )
 elif sys.platform == 'win32':

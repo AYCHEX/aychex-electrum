@@ -21,10 +21,11 @@ import sys, base64, os, re, hashlib, copy, operator, ast, threading, random, get
 import aes, ecdsa
 from ecdsa.util import string_to_number, number_to_string
 from util import print_error
+import config
 
 ############ functions from pywallet ##################### 
 
-addrtype = 0
+addrtype = config.addrtype
 
 def hash_160(public_key):
     try:
@@ -264,7 +265,6 @@ def format_satoshis(x, is_diff=False, num_zeros = 0):
 
 
 from version import ELECTRUM_VERSION, SEED_VERSION
-from interface import DEFAULT_SERVERS
 
 
 
@@ -332,7 +332,7 @@ class Wallet:
         [update() for update in callbacks]
 
     def pick_random_server(self):
-        self.server = random.choice( DEFAULT_SERVERS )         # random choice when the wallet is created
+        self.server = random.choice( config.servers )         # random choice when the wallet is created
 
     def is_up_to_date(self):
         return self.interface.responses.empty() and not self.interface.unanswered_requests
@@ -356,11 +356,11 @@ class Wallet:
         else:
             # backward compatibility: look for wallet file in the default data directory
             if "HOME" in os.environ:
-                wallet_dir = os.path.join( os.environ["HOME"], '.electrum')
+                wallet_dir = os.path.join( os.environ["HOME"], '.%s' % config.wallet_dir.lower() )
             elif "LOCALAPPDATA" in os.environ:
-                wallet_dir = os.path.join( os.environ["LOCALAPPDATA"], 'Electrum' )
+                wallet_dir = os.path.join( os.environ["LOCALAPPDATA"], config.wallet_dir )
             elif "APPDATA" in os.environ:
-                wallet_dir = os.path.join( os.environ["APPDATA"], 'Electrum' )
+                wallet_dir = os.path.join( os.environ["APPDATA"], config.wallet_dir )
             else:
                 raise BaseException("No home directory found in environment variables.")
 
@@ -370,7 +370,7 @@ class Wallet:
     def import_key(self, keypair, password):
         address, key = keypair.split(':')
         if not self.is_valid(address):
-            raise BaseException('Invalid Bitcoin address')
+            raise BaseException('Invalid %s address' % config.coin)
         if address in self.all_addresses():
             raise BaseException('Address already in wallet')
         b = ASecretToSecret( key )
@@ -961,9 +961,9 @@ class Wallet:
         m1 = re.match('([\w\-\.]+)@((\w[\w\-]+\.)+[\w\-]+)', alias)
         m2 = re.match('((\w[\w\-]+\.)+[\w\-]+)', alias)
         if m1:
-            url = 'http://' + m1.group(2) + '/bitcoin.id/' + m1.group(1) 
+            url = 'http://' + m1.group(2) + ('/%s.id/' % config.coin_lower) + m1.group(1)
         elif m2:
-            url = 'http://' + alias + '/bitcoin.id'
+            url = 'http://' + alias + ('/%s.id' % config.coin_lower)
         else:
             return ''
         try:
@@ -993,7 +993,7 @@ class Wallet:
             self.verify_message(previous, signature, "alias:%s:%s"%(alias,target))
 
         if not self.is_valid(target):
-            raise BaseException("Invalid bitcoin address")
+            raise BaseException("Invalid %s address" % config.coin_lower)
 
         return target, signing_addr, auth_name
 

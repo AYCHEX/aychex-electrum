@@ -18,6 +18,8 @@ try:
 except ImportError:
     import electrum.gui_qt as gui_qt
 
+import config
+
 bitcoin = lambda v: v * 100000000
 
 def IconButton(filename, parent=None):
@@ -110,7 +112,7 @@ class MiniWindow(QDialog):
         self.actuator = actuator
 
         self.btc_balance = None
-        self.quote_currencies = ["EUR", "USD", "GBP"]
+        self.quote_currencies = config.currencies
         self.actuator.set_configured_currency(self.set_quote_currency)
         self.exchanger = exchange_rate.Exchanger(self)
         # Needed because price discovery is done in a different thread
@@ -127,7 +129,7 @@ class MiniWindow(QDialog):
 
         # Bitcoin address code
         self.address_input = QLineEdit()
-        self.address_input.setPlaceholderText(_("Enter a Bitcoin address..."))
+        self.address_input.setPlaceholderText(_("Enter a Bitcoin address...").replace("Bitcoin", config.coin))
         self.address_input.setObjectName("address_input")
 
 
@@ -202,8 +204,8 @@ class MiniWindow(QDialog):
         close_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         self.connect(close_shortcut, SIGNAL("activated()"), self.close)
 
-        self.setWindowIcon(QIcon(":electrum.png"))
-        self.setWindowTitle("Electrum")
+        self.setWindowIcon(QIcon(":electrum-%s.png" % config.coin_lower))
+        self.setWindowTitle(config.title)
         self.setWindowFlags(Qt.Window|Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
         self.setObjectName("main_window")
@@ -255,7 +257,7 @@ class MiniWindow(QDialog):
             quote_text = "(%s)" % quote_text
         btc_balance = "%.2f" % (btc_balance / bitcoin(1))
         self.balance_label.set_balance_text(btc_balance, quote_text)
-        self.setWindowTitle("Electrum - %s BTC" % btc_balance)
+        self.setWindowTitle("%s - %s %s" % (config.title, btc_balance, config.symbol))
 
     def amount_input_changed(self, amount_text):
         self.check_button_status()
@@ -323,7 +325,7 @@ class MiniWindow(QDialog):
 
     def show_about(self):
         QMessageBox.about(self, "Electrum",
-            _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjuction with high-performance servers that handle the most complicated parts of the Bitcoin system."))
+            _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjuction with high-performance servers that handle the most complicated parts of the Bitcoin system.").replace("Bitcoin", config.coin))
 
     def show_report_bug(self):
         QMessageBox.information(self, "Electrum - " + _("Reporting Bugs"),
@@ -349,7 +351,7 @@ class BalanceLabel(QLabel):
     def set_balance_text(self, btc_balance, quote_text):
         if self.state == self.SHOW_CONNECTING:
             self.state = self.SHOW_BALANCE
-        self.balance_text = "<span style='font-size: 18pt'>%s</span> <span style='font-size: 10pt'>BTC</span> <span style='font-size: 10pt'>%s</span>" % (btc_balance, quote_text)
+        self.balance_text = "<span style='font-size: 18pt'>%s</span> <span style='font-size: 10pt'>%s</span> <span style='font-size: 10pt'>%s</span>" % (btc_balance, config.symbol, quote_text)
         if self.state == self.SHOW_BALANCE:
             self.setText(self.balance_text)
 
@@ -413,7 +415,7 @@ class ReceivePopup(QDialog):
         self.close()
 
     def setup(self, address):
-        label = QLabel(_("Copied your Bitcoin address to the clipboard!"))
+        label = QLabel(_("Copied your Bitcoin address to the clipboard!").replace("Bitcoin", config.coin))
         address_display = QLineEdit(address)
         address_display.setReadOnly(True)
         resize_line_edit_width(address_display, address)
@@ -423,7 +425,7 @@ class ReceivePopup(QDialog):
         main_layout.addWidget(address_display)
 
         self.setMouseTracking(True)
-        self.setWindowTitle("Electrum - " + _("Receive Bitcoin payment"))
+        self.setWindowTitle("Electrum - " + _("Receive Bitcoin payment").replace("Bitcoin", config.coin))
         self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
         #self.setFrameStyle(QFrame.WinPanel|QFrame.Raised)
@@ -467,7 +469,7 @@ class MiniActuator:
 
         if dest_address is None or not self.wallet.is_valid(dest_address):
             QMessageBox.warning(parent_window, _('Error'), 
-                _('Invalid Bitcoin Address') + ':\n' + address, _('OK'))
+                _('Invalid Bitcoin Address').replace("Bitcoin", config.coin) + ':\n' + address, _('OK'))
             return False
 
         convert_amount = lambda amount: \

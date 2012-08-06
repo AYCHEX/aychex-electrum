@@ -1,6 +1,7 @@
 import os
 import platform
 import sys
+import config
 
 def print_error(*args):
     for item in args:
@@ -11,12 +12,12 @@ def print_error(*args):
 
 def appdata_dir():
     if platform.system() == "Windows":
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], config.wallet_dir)
     elif platform.system() == "Linux":
-        return os.path.join(sys.prefix, "share", "electrum")
+        return os.path.join(sys.prefix, "share", config.wallet_dir.lower())
     elif (platform.system() == "Darwin" or
           platform.system() == "DragonFly"):
-        return "/Library/Application Support/Electrum"
+        return "/Library/Application Support/%s" % config.wallet_dir
     else:
         raise Exception("Unknown system")
 
